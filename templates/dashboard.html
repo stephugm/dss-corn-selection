@@ -70,10 +70,17 @@
                  data-date="{{ project['created_at'] }}">
                 <div class="flex justify-between items-start">
                     <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">{{ project['title'] }}</h3>
-                    <div class="flex space-x-2 ml-4 flex-shrink-0" onclick="event.stopPropagation();">
-                        <button onclick="event.preventDefault(); event.stopPropagation(); openDeleteModal('{{ project['project_id'] }}', '{{ project['title'] }}')" 
-                                class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    <div class="flex space-x-2 ml-4 flex-shrink-0 items-center" onclick="event.stopPropagation();">
+                        {% if project['has_result'] %}
+                        <button onclick="event.preventDefault(); window.location.href='{{ url_for('results', project_id=project['project_id']) }}';"
+                                class="p-1.5 text-gray-500 hover:text-green-700 hover:bg-gray-100 rounded-full transition-colors">
+                        <i data-lucide="chart-column-stacked" class="w-5 h-5 text-green-400"></i>
+                        </button>
+                        {% endif %}
+                        <button data-project-id="{{ project['project_id'] }}" data-project-title="{{ project['title'] }}" 
+                                onclick="event.preventDefault(); event.stopPropagation(); openDeleteModal('{{ project['project_id'] }}', '{{ project['title'] }}')"
+                                class="p-2 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors flex items-center justify-center">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>

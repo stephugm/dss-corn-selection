@@ -82,7 +82,7 @@
                 <div class="flex items-center space-x-4">
                     <input type="text" name="criteria[]" required placeholder="Enter criterion name"
                         class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                    <select name="criteria_type[]" required
+                    <select name="criteria_type[]" required hidden
                         class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                         <option value="benefit">Benefit</option>
                         <option value="cost">Cost</option>
@@ -399,7 +399,7 @@ function updateConsistencyIndicator(criterion, isConsistent, cr, isCriteriaCompa
     if (isConsistent) {
         indicator.innerHTML = `✓ <span class="text-green-600">Consistent (CR: ${cr.toFixed(5)})</span>`;
     } else {
-        indicator.innerHTML = `⚠ <span class="text-yellow-600">Inconsistent (CR: ${cr.toFixed(5)})</span>`;
+        indicator.innerHTML = `⚠ <span class="text-red-600">Inconsistent (CR: ${cr.toFixed(5)})</span>`;
     }
 }
 
@@ -456,7 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <div class="flex items-center space-x-4">
                 <input type="text" name="criteria[]" required placeholder="Enter criterion name"
                     class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                <select name="criteria_type[]" required
+                <select name="criteria_type[]" required hidden
                     class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     <option value="benefit">Benefit</option>
                     <option value="cost">Cost</option>

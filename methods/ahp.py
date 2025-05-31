@@ -52,9 +52,20 @@ def calculate_consistency_ratio(pairwise_matrix, weights):
         6: 1.24, 7: 1.32, 8: 1.41, 9: 1.45, 10: 1.49
     }
     
+    # Ensure n is in ri_values
+    if n not in ri_values:
+        raise ValueError(f"Random consistency index (RI) not defined for matrix size {n}.")
+
     # Calculate consistency ratio
+    if ri_values[n] == 0:
+        return 0  # Perfect consistency for n <= 2
+
     cr = ci / ri_values[n]
-    
+
+    # Handle invalid CR values
+    if not np.isfinite(cr):
+        cr = float('inf')  # Assign infinity if CR is invalid
+
     return cr
 
 def load_alternative_comparisons(project_id, filename='data/alternative_comparisons.csv'):

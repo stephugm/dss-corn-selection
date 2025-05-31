@@ -59,11 +59,22 @@ def init_csv_files():
 
 # Data management functions
 def get_projects():
-    """Get all projects."""
+    """Get all projects and check if they have results."""
     projects = []
+    results = {}
+
+    # Load results into a dictionary for quick lookup
+    if os.path.exists(RESULTS_FILE):
+        with open(RESULTS_FILE, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                results[row['project_id']] = True
+
+    # Read projects and add 'has_result' field
     with open(PROJECTS_FILE, 'r', newline='') as f:
         reader = csv.DictReader(f)
         for row in reader:
+            row['has_result'] = results.get(row['project_id'], False)
             projects.append(row)
     return projects
 
