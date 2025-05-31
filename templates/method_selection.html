@@ -17,7 +17,7 @@
                 <p class="text-gray-600 mt-2">Analytic Hierarchy Process for complex decision making through pairwise comparisons.</p>
             </div>
             <div class="pt-4">
-                <a href="{{ url_for('wizard.project_wizard', method='ahp', step=1) }}" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                <a href="{{ url_for('project_wizard', method='ahp') }}" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
                     Use This Method
                 </a>
             </div>
@@ -33,7 +33,7 @@
                 <p class="text-gray-600 mt-2">Technique for Order Preference by Similarity to Ideal Solution using distance-based evaluation.</p>
             </div>
             <div class="pt-4">
-                <a href="{{ url_for('wizard.project_wizard', method='topsis', step=1) }}" class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                <a href="{{ url_for('project_wizard', method='topsis') }}" class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
                     Use This Method
                 </a>
             </div>
@@ -49,7 +49,7 @@
                 <p class="text-gray-600 mt-2">Gap analysis method for comparing alternatives against an ideal profile.</p>
             </div>
             <div class="pt-4">
-                <a href="{{ url_for('wizard.project_wizard', method='profile_matching', step=1) }}" class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                <a href="{{ url_for('project_wizard', method='profile_matching') }}" class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                     Use This Method
                 </a>
             </div>

@@ -64,7 +64,7 @@
                     <div class="flex items-center space-x-4">
                         <input type="text" name="criteria[]" required value="{{ criterion }}"
                             class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
-                        <select name="criteria_type[]" required
+                        <select name="criteria_type[]" required hidden
                             class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                             <option value="benefit" {% if session.criterion_types[loop.index0] == 'benefit' %}selected{% endif %}>Benefit</option>
                             <option value="cost" {% if session.criterion_types[loop.index0] == 'cost' %}selected{% endif %}>Cost</option>

@@ -166,30 +166,27 @@ def load_alternative_comparisons(project_id):
     return comparisons
 
 def save_alternative_comparison(project_id, criterion, i, j, value):
-    """Save a single alternative comparison to CSV."""
+    """Save a single alternative comparison to CSV, updating existing entries if they match."""
     filename = 'alternative_comparisons.csv'
-    
+
     # Read existing comparisons
     rows = csv_handler.read_all(filename)
     fieldnames = ['project_id', 'criterion', 'alternative1', 'alternative2', 'value']
-    
-    # Filter out existing comparison for this project, criterion and alternatives
+
+    # Filter out existing comparison for this project, criterion, and alternatives
     existing_rows = []
     if rows:
         fieldnames = rows[0]  # Preserve original fieldnames
         existing_rows = [
             row for row in rows[1:] 
             if not row or 
-               row[0] != project_id or 
-               row[1] != criterion or 
-               int(row[2]) != i or 
-               int(row[3]) != j
+               not (row[0] == project_id and row[1] == criterion and int(row[2]) == i and int(row[3]) == j)
         ]
-    
-    # Add new comparison
+
+    # Add new or updated comparison
     new_row = [project_id, criterion, str(i), str(j), str(value)]
     all_rows = [fieldnames] + existing_rows + [new_row]
-    
+
     # Save all comparisons
     csv_handler.write_all(filename, all_rows)
 
