@@ -368,7 +368,6 @@ function updateConsistencyIndicator(criterion, isConsistent, cr, isCriteriaCompa
         nextButton.classList.toggle('cursor-not-allowed', !isConsistent);
         nextButton.classList.toggle('cursor-pointer', isConsistent);
     }
-    console.log('indicatorx', indicator, isCriteriaComparison)
     if (isCriteriaComparison) {
         // For criteria comparison, use the dedicated indicator div
         indicator = document.getElementById('criteria-consistency-indicator');

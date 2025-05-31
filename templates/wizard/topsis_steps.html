@@ -130,7 +130,7 @@
                         <input type="number" name="weights[]" required min="0" max="100" step="0.01"
                             value="{{ (session.weights[criterion] * 100) if session.weights and criterion in session.weights else '' }}"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                            onchange="updateTotalWeight()">
+                            oninput="updateTotalWeight()">
                     </div>
                     <span class="w-8">%</span>
                 </div>
@@ -147,7 +147,7 @@
                     class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Previous Step
                 </a>
-                <button type="submit"
+                <button id="nextStepButton" type="submit"
                     class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
                     Next Step
                 </button>
@@ -319,10 +319,25 @@
             .map(input => parseFloat(input.value) || 0);
         const total = weights.reduce((sum, weight) => sum + weight, 0);
         document.getElementById('totalWeight').textContent = total.toFixed(2) + '%';
-        
+
         // Visual feedback
         const totalElement = document.getElementById('totalWeight');
-        if (Math.abs(total - 100) < 0.01) {
+        const nextButton = document.getElementById('nextStepButton');
+         const isValid = Math.abs(total) === 100;
+
+        if (nextButton) {
+           
+            nextButton.disabled = !isValid || isNaN(total);
+            
+            // Update button styles
+            nextButton.classList.toggle('bg-blue-300', !isValid);
+            nextButton.classList.toggle('bg-blue-500', isValid);
+            nextButton.classList.toggle('hover:bg-blue-700', isValid);
+            nextButton.classList.toggle('cursor-not-allowed', !isValid);
+            nextButton.classList.toggle('cursor-pointer', isValid);
+        }
+
+        if (isValid) {
             totalElement.classList.remove('text-red-500');
             totalElement.classList.add('text-green-500');
         } else {
@@ -331,5 +346,5 @@
         }
     }
 </script>
-{% endblock %}
+{% endblock %} 
 {% endblock %}
