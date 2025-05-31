@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Search and Filters -->
+    <div class="flex justify-between items-center">
+        <div class="flex-1 max-w-lg">
+            <div class="relative">
+                <input type="text" placeholder="Search projects..." class="w-full pl-10 pr-4 py-2 border rounded-lg">
+                <i data-lucide="search" class="absolute left-3 top-2.5 text-gray-400"></i>
+            </div>
+        </div>
+        <div class="flex space-x-4">
+            <select id="methodFilter" class="border rounded-lg px-4 py-2">
+                <option value="">All Methods</option>
+                <option value="ahp">AHP</option>
+                <option value="topsis">TOPSIS</option>
+                <option value="profile_matching">Profile Matching</option>
+            </select>
+            <select id="dateFilter" class="border rounded-lg px-4 py-2">
+                <option value="">All Dates</option>
+                <option value="today">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Create New Project Button -->
+    <div class="text-right">
+        <a href="/method-selection" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+            <i data-lucide="plus" class="mr-2"></i>
+            Create New Project
+        </a>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+        <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div class="mt-3 text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                    <i data-lucide="alert-triangle" class="text-red-600"></i>
+                </div>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Delete Project</h3>
+                <div class="mt-2 px-7 py-3">
+                    <p class="text-sm text-gray-500">
+                        Are you sure you want to delete <span id="projectToDelete" class="font-medium"></span>? This action cannot be undone.
+                    </p>
+                </div>
+                <div class="flex justify-center gap-4 mt-4">
+                    <button onclick="closeDeleteModal()" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-800 text-sm font-medium rounded">
+                        Cancel
+                    </button>
+                    <button id="confirmDeleteBtn" onclick="confirmDelete()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded">
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Project Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
+        {% for project in projects %}
+        <a href="{{ url_for('edit_project', project_id=project['project_id']) }}" class="flex h-full">
+            <div class="project-card bg-white rounded-lg shadow-sm border p-6 w-full flex flex-col h-full relative group hover:shadow-md transition-transform hover:-translate-y-0.5" 
+                 data-method="{{ project['method'] }}" 
+                 data-date="{{ project['created_at'] }}">
+                <div class="flex justify-between items-start">
+                    <h3 class="text-lg font-semibold text-gray-900 line-clamp-2">{{ project['title'] }}</h3>
+                    <div class="flex space-x-2 ml-4 flex-shrink-0" onclick="event.stopPropagation();">
+                        <button onclick="event.preventDefault(); event.stopPropagation(); openDeleteModal('{{ project['project_id'] }}', '{{ project['title'] }}')" 
+                                class="p-1.5 text-gray-500 hover:text-red-600 hover:bg-gray-100 rounded-full transition-colors">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            <div class="mt-4 pt-4 border-t border-gray-100 flex items-center space-x-2 mt-auto">
+                {% if project['method'] == 'ahp' %}
+                <span class="px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-full text-sm">AHP</span>
+                {% elif project['method'] == 'topsis' %}
+                <span class="px-2.5 py-0.5 bg-purple-100 text-purple-800 rounded-full text-sm">TOPSIS</span>
+                {% else %}
+                <span class="px-2.5 py-0.5 bg-green-100 text-green-800 rounded-full text-sm">Profile Matching</span>
+                {% endif %}
+                <span class="text-sm text-gray-500">Created {{ project['created_at'].split('T')[0] }}</span>
+            </div>
+            </div>
+        </a>
+        {% else %}
+        <div class="col-span-full text-center py-12">
+            <p class="text-gray-500">No projects yet. Click "Create New Project" to get started.</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Filter projects based on selected method and date
+function filterProjects() {
+    const method = document.getElementById('methodFilter').value.toLowerCase();
+    const dateFilter = document.getElementById('dateFilter').value;
+    const projectCards = document.querySelectorAll('.project-card');
+    const now = new Date();
+    
+    projectCards.forEach(card => {
+        const cardMethod = card.getAttribute('data-method');
+        const cardDate = new Date(card.getAttribute('data-date'));
+        let showCard = true;
+        
+        // Filter by method
+        if (method && cardMethod !== method) {
+            showCard = false;
+        }
+        
+        // Filter by date
+        if (dateFilter && showCard) {
+            const isSameDay = (date1, date2) => 
+                date1.getFullYear() === date2.getFullYear() &&
+                date1.getMonth() === date2.getMonth() &&
+                date1.getDate() === date2.getDate();
+                
+            const isSameWeek = (date1, date2) => {
+                const oneDay = 24 * 60 * 60 * 1000;
+                const diffDays = Math.round(Math.abs((date1 - date2) / oneDay));
+                return diffDays < 7 && date1.getDay() >= date2.getDay();
+            };
+            
+            const isSameMonth = (date1, date2) => 
+                date1.getFullYear() === date2.getFullYear() && 
+                date1.getMonth() === date2.getMonth();
+            
+            if (dateFilter === 'today' && !isSameDay(now, cardDate)) {
+                showCard = false;
+            } else if (dateFilter === 'week' && !isSameWeek(now, cardDate)) {
+                showCard = false;
+            } else if (dateFilter === 'month' && !isSameMonth(now, cardDate)) {
+                showCard = false;
+            }
+        }
+        
+        card.style.display = showCard ? 'block' : 'none';
+    });
+    
+    // Show message if no projects match the filters
+    const visibleProjects = document.querySelectorAll('.project-card[style="display: block;"]');
+    const noProjectsMessage = document.querySelector('.no-projects-message');
+    
+    if (visibleProjects.length === 0) {
+        if (!noProjectsMessage) {
+            const projectsGrid = document.querySelector('.grid');
+            const message = document.createElement('div');
+            message.className = 'col-span-full text-center py-12 no-projects-message';
+            message.textContent = 'No projects match the selected filters.';
+            projectsGrid.appendChild(message);
+        } else {
+            noProjectsMessage.style.display = 'block';
+        }
+    } else if (noProjectsMessage) {
+        noProjectsMessage.style.display = 'none';
+    }
+}
+
+// Add event listeners when the DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    const methodFilter = document.getElementById('methodFilter');
+    const dateFilter = document.getElementById('dateFilter');
+    
+    if (methodFilter) {
+        methodFilter.addEventListener('change', filterProjects);
+    }
+    
+    if (dateFilter) {
+        dateFilter.addEventListener('change', filterProjects);
+    }
+    
+    // Initialize Lucide icons
+    lucide.createIcons();
+});
+
+function openDeleteModal(projectId, projectTitle) {
+    const modal = document.getElementById('deleteModal');
+    const projectSpan = document.getElementById('projectToDelete');
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (modal && projectSpan && confirmBtn) {
+        modal.classList.remove('hidden');
+        projectSpan.textContent = projectTitle;
+        confirmBtn.setAttribute('data-project-id', projectId);
+    }
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+function confirmDelete() {
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    if (!confirmBtn) return;
+
+    const projectId = confirmBtn.getAttribute('data-project-id');
+    if (!projectId) return;
+
+    fetch(`/delete-project/${projectId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            window.location.reload();
+        }
+    })
+    .catch(error => {
+        console.error('Error deleting project:', error);
+    });
+}
+
+// Initialize Lucide icons after any dynamic content changes
+document.addEventListener('DOMContentLoaded', function() {
+    lucide.createIcons();
+});
+</script>
+{% endblock %}

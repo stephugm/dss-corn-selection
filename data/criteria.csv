@@ -1,0 +1,16 @@
+project_id,name,type
+20250515221036,Curah Hujan,cost
+20250515221036,Tahan terhadap hama,benefit
+20250515221036,Hasil Panen,benefit
+20250515221036,Usia Panen,cost
+20250515221036,Umur bibit,benefit
+20250517042125,Curah Hujan,secondary
+20250517042125,Tahan terhadap hama,core
+20250517042125,Hasil Panen,secondary
+20250517042125,Usia Panen,secondary
+20250517042125,Umur bibit,core
+20250515220927,Curah Hujan,benefit
+20250515220927,Tahan terhadap hama,benefit
+20250515220927,Hasil Panen,benefit
+20250515220927,Usia Panen,benefit
+20250515220927,Umur bibit,benefit

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block title %}Select Method{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <h2 class="text-2xl font-bold text-gray-900">Select Decision-Making Method</h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- AHP Card -->
+        <div class="bg-white rounded-lg shadow-sm border p-6 space-y-4 hover:shadow-md transition">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 mb-4">
+                    <i class="lucide-git-merge text-blue-600 w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">AHP</h3>
+                <p class="text-gray-600 mt-2">Analytic Hierarchy Process for complex decision making through pairwise comparisons.</p>
+            </div>
+            <div class="pt-4">
+                <a href="{{ url_for('wizard.project_wizard', method='ahp', step=1) }}" class="block w-full text-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                    Use This Method
+                </a>
+            </div>
+        </div>
+
+        <!-- TOPSIS Card -->
+        <div class="bg-white rounded-lg shadow-sm border p-6 space-y-4 hover:shadow-md transition">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-purple-100 mb-4">
+                    <i class="lucide-target text-purple-600 w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">TOPSIS</h3>
+                <p class="text-gray-600 mt-2">Technique for Order Preference by Similarity to Ideal Solution using distance-based evaluation.</p>
+            </div>
+            <div class="pt-4">
+                <a href="{{ url_for('wizard.project_wizard', method='topsis', step=1) }}" class="block w-full text-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700">
+                    Use This Method
+                </a>
+            </div>
+        </div>
+
+        <!-- Profile Matching Card -->
+        <div class="bg-white rounded-lg shadow-sm border p-6 space-y-4 hover:shadow-md transition">
+            <div class="text-center">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 mb-4">
+                    <i class="lucide-user-check text-green-600 w-8 h-8"></i>
+                </div>
+                <h3 class="text-xl font-semibold text-gray-900">Profile Matching</h3>
+                <p class="text-gray-600 mt-2">Gap analysis method for comparing alternatives against an ideal profile.</p>
+            </div>
+            <div class="pt-4">
+                <a href="{{ url_for('wizard.project_wizard', method='profile_matching', step=1) }}" class="block w-full text-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                    Use This Method
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

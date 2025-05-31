@@ -1,0 +1,335 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">
+    TOPSIS
+</h1>
+<div class="container mx-auto px-4 py-8">
+    <!-- Stepper -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ (current_step / total_steps * 100)|int }}%;"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <span class="text-sm font-medium {% if current_step >= 1 %}text-blue-600{% else %}text-gray-500{% endif %}">Project Info</span>
+                    <span class="text-sm font-medium {% if current_step >= 2 %}text-blue-600{% else %}text-gray-500{% endif %}">Criteria</span>
+                    <span class="text-sm font-medium {% if current_step >= 3 %}text-blue-600{% else %}text-gray-500{% endif %}">Weights</span>
+                    <span class="text-sm font-medium {% if current_step >= 4 %}text-blue-600{% else %}text-gray-500{% endif %}">Alternatives</span>
+                    <span class="text-sm font-medium {% if current_step >= 5 %}text-blue-600{% else %}text-gray-500{% endif %}">Alternative Scores</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step Content -->
+    {% if current_step == 1 %}
+    <!-- Project Info Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Project Information</h2>
+        <form method="POST" action="{{ url_for('wizard.save_project_info') }}">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                    Project Title
+                </label>
+                <input type="text" id="title" name="title" required value="{{ session.project.title if session.project else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                    Description
+                </label>
+                <textarea id="description" name="description" rows="3"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ session.project.description if session.project else '' }}</textarea>
+            </div>
+            <input type="hidden" name="method" value="topsis">
+            <div class="flex justify-end">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 2 %}
+    <!-- Criteria Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Define Criteria</h2>
+        <form method="POST" action="{{ url_for('wizard.save_criteria_topsis') }}" id="criteriaForm">
+            <div id="criteriaList" class="space-y-4">
+                {% if session.criteria %}
+                    {% for criterion in session.criteria %}
+                    <div class="flex items-center space-x-4">
+                        <input type="text" name="criteria[]" required value="{{ criterion }}"
+                            class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <select name="criteria_type[]" required
+                            class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="benefit" {% if session.criterion_types[loop.index0] == 'benefit' %}selected{% endif %}>Benefit</option>
+                            <option value="cost" {% if session.criterion_types[loop.index0] == 'cost' %}selected{% endif %}>Cost</option>
+                        </select>
+                        <button type="button" onclick="removeCriterion(this)"
+                            class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="flex items-center space-x-4">
+                    <input type="text" name="criteria[]" required placeholder="Enter criterion name"
+                        class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <select name="criteria_type[]" required
+                        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="benefit">Benefit</option>
+                        <option value="cost">Cost</option>
+                    </select>
+                    <button type="button" onclick="removeCriterion(this)"
+                        class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <button type="button" onclick="addCriterion()"
+                    class="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    + Add Another Criterion
+                </button>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='topsis') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 3 %}
+    <!-- Weights Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Assign Criteria Weights</h2>
+        <p class="mb-4 text-gray-600">Assign weights to each criterion. The sum of all weights should equal 100%.</p>
+        <form method="POST" action="{{ url_for('wizard.save_weights_topsis') }}" id="weightsForm">
+            <div class="space-y-4">
+                {% for criterion in criteria %}
+                <div class="flex items-center space-x-4">
+                    <label class="w-1/3">{{ criterion }}</label>
+                    <div class="flex-1">
+                        <input type="number" name="weights[]" required min="0" max="100" step="0.01"
+                            value="{{ (session.weights[criterion] * 100) if session.weights and criterion in session.weights else '' }}"
+                            class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            onchange="updateTotalWeight()">
+                    </div>
+                    <span class="w-8">%</span>
+                </div>
+                {% endfor %}
+                <div class="flex items-center space-x-4 font-bold">
+                    <label class="w-1/3">Total</label>
+                    <div class="flex-1">
+                        <span id="totalWeight" class="text-lg">0%</span>
+                    </div>
+                </div>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='topsis') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 4 %}
+    <!-- Alternatives Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Define Alternatives</h2>
+        <form method="POST" action="{{ url_for('wizard.save_alternatives') }}" id="alternativesForm">
+            <div id="alternativesList" class="space-y-4">
+                {% if session.alternatives %}
+                    {% for alternative in session.alternatives %}
+                    <div class="flex items-center space-x-4">
+                        <input type="text" name="alternatives[]" required value="{{ alternative }}"
+                            class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="removeAlternative(this)"
+                            class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="flex items-center space-x-4">
+                    <input type="text" name="alternatives[]" required placeholder="Enter alternative name"
+                        class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <button type="button" onclick="removeAlternative(this)"
+                        class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <button type="button" onclick="addAlternative()"
+                    class="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    + Add Another Alternative
+                </button>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='topsis') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 5 %}
+    <!-- Alternative Scores Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Alternative Scores</h2>
+        <form method="POST" action="{{ url_for('wizard.save_alternative_scores_topsis') }}">
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead>
+                        <tr>
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Alternative
+                            </th>
+                            {% for criterion in criteria %}
+                            <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                {{ criterion }}
+                            </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for alternative in alternatives %}
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                {{ alternative }}
+                            </td>
+                            {% for criterion in criteria %}
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="number" step="0.01" required
+                                    name="score_{{ alternative|replace(' ', '_') }}_{{ criterion|replace(' ', '_') }}"
+                                    value="{{ session.scores[alternative][criterion] if session.scores and alternative in session.scores and criterion in session.scores[alternative] else '' }}"
+                                    class="shadow appearance-none border rounded w-24 py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            </td>
+                            {% endfor %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='topsis') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Calculate Results
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script>
+    window.onload = function() {
+        updateTotalWeight();
+    };
+    
+    function addCriterion() {
+        const template = `
+            <div class="flex items-center space-x-4">
+                <input type="text" name="criteria[]" required placeholder="Enter criterion name"
+                    class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <select name="criteria_type[]" required
+                    class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="benefit">Benefit</option>
+                    <option value="cost">Cost</option>
+                </select>
+                <button type="button" onclick="removeCriterion(this)"
+                    class="text-red-500 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.getElementById('criteriaList').insertAdjacentHTML('beforeend', template);
+    }
+
+    function removeCriterion(button) {
+        button.closest('.flex').remove();
+    }
+
+    function addAlternative() {
+        const template = `
+            <div class="flex items-center space-x-4">
+                <input type="text" name="alternatives[]" required placeholder="Enter alternative name"
+                    class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <button type="button" onclick="removeAlternative(this)"
+                    class="text-red-500 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.getElementById('alternativesList').insertAdjacentHTML('beforeend', template);
+    }
+
+    function removeAlternative(button) {
+        button.closest('.flex').remove();
+    }
+
+    function updateTotalWeight() {
+        const weights = Array.from(document.getElementsByName('weights[]'))
+            .map(input => parseFloat(input.value) || 0);
+        const total = weights.reduce((sum, weight) => sum + weight, 0);
+        document.getElementById('totalWeight').textContent = total.toFixed(2) + '%';
+        
+        // Visual feedback
+        const totalElement = document.getElementById('totalWeight');
+        if (Math.abs(total - 100) < 0.01) {
+            totalElement.classList.remove('text-red-500');
+            totalElement.classList.add('text-green-500');
+        } else {
+            totalElement.classList.remove('text-green-500');
+            totalElement.classList.add('text-red-500');
+        }
+    }
+</script>
+{% endblock %}
+{% endblock %}

@@ -1,0 +1,503 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-6">
+    Analytic Hierarchy Process (AHP)
+</h1>
+<div class="container mx-auto px-4 py-8">
+    <!-- Stepper -->
+    <div class="mb-8">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div class="bg-blue-600 h-2.5 rounded-full" style="width: {{ (current_step / total_steps * 100)|int }}%;"></div>
+                </div>
+                <div class="flex justify-between mt-2">
+                    <span class="text-sm font-medium {% if current_step >= 1 %}text-blue-600{% else %}text-gray-500{% endif %}">Project Info</span>
+                    <span class="text-sm font-medium {% if current_step >= 2 %}text-blue-600{% else %}text-gray-500{% endif %}">Criteria</span>
+                    <span class="text-sm font-medium {% if current_step >= 3 %}text-blue-600{% else %}text-gray-500{% endif %}">Pairwise Comparison</span>
+                    <span class="text-sm font-medium {% if current_step >= 4 %}text-blue-600{% else %}text-gray-500{% endif %}">Alternatives</span>
+                    <span class="text-sm font-medium {% if current_step >= 5 %}text-blue-600{% else %}text-gray-500{% endif %}">Alternative Pairwise Comparison</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step Content -->
+    {% if current_step == 1 %}
+    <!-- Project Info Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Project Information</h2>
+        <form method="POST" action="{{ url_for('wizard.save_project_info') }}">
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="title">
+                    Project Title
+                </label>
+                <input type="text" id="title" name="title" required value="{{ session.project.title if session.project else '' }}"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="mb-4">
+                <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                    Description
+                </label>
+                <textarea id="description" name="description" rows="3"
+                    class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">{{ session.project.description if session.project else '' }}</textarea>
+            </div>
+            <input type="hidden" name="method" value="ahp">
+            <div class="flex justify-end">
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 2 %}
+    <!-- Criteria Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Define Criteria</h2>
+        <form method="POST" action="{{ url_for('wizard.save_criteria_ahp') }}" id="criteriaForm">
+            <div id="criteriaList" class="space-y-4">
+                {% if session.criteria %}
+                    {% for criterion in session.criteria %}
+                    <div class="flex items-center space-x-4">
+                        <input type="text" name="criteria[]" required value="{{ criterion }}"
+                            class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <select name="criteria_type[]" required
+                            class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                            <option value="benefit" {% if session.criterion_types[loop.index0] == 'benefit' %}selected{% endif %}>Benefit</option>
+                            <option value="cost" {% if session.criterion_types[loop.index0] == 'cost' %}selected{% endif %}>Cost</option>
+                        </select>
+                        <button type="button" onclick="removeCriterion(this)"
+                            class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="flex items-center space-x-4">
+                    <input type="text" name="criteria[]" required placeholder="Enter criterion name"
+                        class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <select name="criteria_type[]" required
+                        class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <option value="benefit">Benefit</option>
+                        <option value="cost">Cost</option>
+                    </select>
+                    <button type="button" onclick="removeCriterion(this)"
+                        class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <button type="button" onclick="addCriterion()"
+                    class="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    + Add Another Criterion
+                </button>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='ahp') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 3 %}
+    <!-- Pairwise Comparison Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Criteria Pairwise Comparison</h2>
+        <p class="mb-4 text-gray-600">Compare the relative importance of each criterion pair using the scale below:</p>
+        <div class="mb-6 p-4 bg-gray-50 rounded">
+            <h3 class="font-bold mb-2">Scale Reference:</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>1 = Equal importance</li>
+                <li>3 = Moderate importance</li>
+                <li>5 = Strong importance</li>
+                <li>7 = Very strong importance</li>
+                <li>9 = Extreme importance</li>
+                <li>2,4,6,8 = Intermediate values</li>
+            </ul>
+        </div>
+        <form method="POST" action="{{ url_for('wizard.save_pairwise_comparison') }}" id="criteriaComparisonForm">
+            <input type="hidden" name="is_consistent" id="isConsistent" value="false">
+            <div class="mb-6 p-4 bg-gray-50 rounded">
+                <div id="criteria-consistency-indicator" class="mb-4"></div>
+                {% for i in range(criteria|length) %}
+                    {% for j in range(i+1, criteria|length) %}
+                    <div class="rounded-lg p-2 shadow-sm">
+                        <div class="space-y-4">
+                            <div class="flex items-center justify-between bg-white p-3 rounded border">
+                                <span class="w-1/4 text-sm text-right pr-2 truncate">{{ criteria[i] }}</span>
+                                <div class="flex-1 flex justify-center space-x-1">
+                                    {% for option in pairwise_scale_options %}
+                                    <label class="flex flex-col items-center px-0.5">
+                                        <input type="radio" 
+                                               name="comparison_{{ i }}_{{ j }}" 
+                                               value="{{ option.value }}" 
+                                               required
+                                               class="form-radio h-4 w-4 text-blue-600"
+                                               {% if (i,j) in pairwise_comparisons and pairwise_comparisons[(i,j)] == option.value|float %}
+                                                   checked
+                                               {% elif (j,i) in pairwise_comparisons and (1/pairwise_comparisons[(j,i)])|round(2) == option.value|float %}
+                                                   checked
+                                               {% endif %}>
+                                        <span class="text-xs mt-0.5">{{ option.label }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <span class="w-1/4 text-sm pl-2 truncate">{{ criteria[j] }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='ahp') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button id="nextStepButton" type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 4 %}
+    <!-- Alternatives Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Define Alternatives</h2>
+        <form method="POST" action="{{ url_for('wizard.save_alternatives') }}" id="alternativesForm">
+            <div id="alternativesList" class="space-y-4">
+                {% if session.alternatives %}
+                    {% for alternative in session.alternatives %}
+                    <div class="flex items-center space-x-4">
+                        <input type="text" name="alternatives[]" required value="{{ alternative }}"
+                            class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                        <button type="button" onclick="removeAlternative(this)"
+                            class="text-red-500 hover:text-red-700">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="flex items-center space-x-4">
+                    <input type="text" name="alternatives[]" required placeholder="Enter alternative name"
+                        class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <button type="button" onclick="removeAlternative(this)"
+                        class="text-red-500 hover:text-red-700">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            <div class="mt-4">
+                <button type="button" onclick="addAlternative()"
+                    class="text-blue-500 hover:text-blue-700 font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    + Add Another Alternative
+                </button>
+            </div>
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='ahp') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Next Step
+                </button>
+            </div>
+        </form>
+    </div>
+
+    {% elif current_step == 5 %}
+    <!-- Alternative Pairwise Comparison Step -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-2xl font-bold mb-4">Alternative Pairwise Comparison</h2>
+        <p class="mb-4 text-gray-600">Compare the relative importance of each alternative pair based on the criteria:</p>
+        <div class="mb-6 p-4 bg-gray-50 rounded">
+            <h3 class="font-bold mb-2">Scale Reference:</h3>
+            <ul class="list-disc list-inside space-y-1">
+                <li>1 = Equal importance</li>
+                <li>3 = Moderate importance</li>
+                <li>5 = Strong importance</li>
+                <li>7 = Very strong importance</li>
+                <li>9 = Extreme importance</li>
+                <li>2,4,6,8 = Intermediate values</li>
+            </ul>
+        </div>
+
+        <form method="POST" action="{{ url_for('wizard.handle_alternative_comparison') }}">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% for criterion in criteria %}
+                <div class="bg-gray-50 rounded-lg p-6 shadow-sm">
+                    <h3 id="criterion-{{ loop.index0 }}" class="text-lg font-semibold mb-4" data-criterion="{{ criterion }}">{{ criterion }}</h3>
+                    <div class="space-y-4">
+                        {% for i in range(alternatives|length) %}
+                            {% for j in range(i+1, alternatives|length) %}
+                            <div class="flex items-center justify-between bg-white p-3 rounded border">
+                                <span class="w-1/4 text-sm text-right pr-2 truncate" title="{{ alternatives[i] }}">{{ alternatives[i] }}</span>
+                                <div class="flex-1 flex justify-center space-x-1">
+                                    {% for option in pairwise_scale_options %}
+                                    <label class="flex flex-col items-center px-0.5">
+                                        <input type="radio" 
+                                               name="comparison_{{ criterion }}_{{ i }}_{{ j }}" 
+                                               value="{{ option.value }}" 
+                                               required
+                                               class="form-radio h-4 w-4 text-blue-600"
+                                               {% if criterion in alternative_comparisons and (i,j) in alternative_comparisons[criterion] and alternative_comparisons[criterion][(i,j)] == option.value|float %}checked{% endif %}>
+                                        <span class="text-xs mt-0.5">{{ option.label }}</span>
+                                    </label>
+                                    {% endfor %}
+                                </div>
+                                <span class="w-1/4 text-sm pl-2 truncate" title="{{ alternatives[j] }}">{{ alternatives[j] }}</span>
+                            </div>
+                            {% endfor %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if loop.index % 2 == 0 and not loop.last %}
+                    </div><div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {% endif %}
+                {% endfor %}
+            </div>
+            
+            <div class="flex justify-between mt-6">
+                <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='ahp') }}"
+                    class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Previous Step
+                </a>
+                <button id="nextStepButton" type="submit"
+                    class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Calculate Results
+                </button>
+            </div>
+        </form>
+    </div>
+    {% endif %}
+</div>
+
+{% block scripts %}
+<script>
+// Function to check consistency of comparisons
+async function checkConsistency(criterion, isCriteriaComparison = false) {
+    const comparisons = {};
+    let selector = isCriteriaComparison 
+        ? 'input[type="radio"][name^="comparison_"]:checked'
+        : `input[name^='comparison_${criterion}_']:checked`;
+    
+    // Get all checked comparison inputs
+    document.querySelectorAll(selector).forEach(input => {
+        const name = input.name;
+        if (isCriteriaComparison) {
+            // For criteria comparison, the name is like "comparison_0_1"
+            const [_, i, j] = name.match(/comparison_(\d+)_(\d+)/);
+            comparisons[`${i}_${j}`] = parseFloat(input.value);
+        } else {
+            // For alternative comparison, the name is like "comparison_criterion_0_1"
+            const key = name.replace(`comparison_${criterion}_`, '');
+            comparisons[key] = parseFloat(input.value);
+        }
+    });
+    
+    if (Object.keys(comparisons).length === 0) {
+        return { is_consistent: true, consistency_ratio: 0 };
+    }
+    
+    try {
+        const url = isCriteriaComparison 
+            ? '{{ url_for("wizard.check_criteria_consistency_route") }}'
+            : '{{ url_for("wizard.check_consistency") }}';
+            
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                criterion: criterion,
+                comparisons: comparisons
+            })
+        });
+        if (!response.ok) {
+            throw new Error('Failed to check consistency');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('Error checking consistency:', error);
+        return { is_consistent: true, consistency_ratio: 0 };
+    }
+}
+
+// Function to update consistency indicator
+function updateConsistencyIndicator(criterion, isConsistent, cr, isCriteriaComparison = false) {
+    let indicator;
+    
+    const nextButton = document.getElementById('nextStepButton');
+    
+    if (nextButton) {
+        nextButton.disabled = !isConsistent;
+        
+        // Update button styles
+        nextButton.classList.toggle('bg-blue-300', !isConsistent);
+        nextButton.classList.toggle('bg-blue-500', isConsistent);
+        nextButton.classList.toggle('hover:bg-blue-700', isConsistent);
+        nextButton.classList.toggle('cursor-not-allowed', !isConsistent);
+        nextButton.classList.toggle('cursor-pointer', isConsistent);
+    }
+    console.log('indicatorx', indicator, isCriteriaComparison)
+    if (isCriteriaComparison) {
+        // For criteria comparison, use the dedicated indicator div
+        indicator = document.getElementById('criteria-consistency-indicator');
+    } else {
+        // For alternative comparison, find the criterion header by data attribute
+        const criterionHeader = document.querySelector(`[data-criterion="${criterion}"]`);
+        
+        if (!criterionHeader) {
+            console.warn(`Could not find criterion header for: ${criterion}`);
+            return;
+        }
+        
+        // Get or create the indicator
+        const indicatorId = `consistency-indicator-${criterion}`;
+        indicator = document.getElementById(indicatorId);
+        
+        if (!indicator) {
+            indicator = document.createElement('span');
+            indicator.id = indicatorId;
+            indicator.className = 'ml-2 text-sm font-normal';
+            criterionHeader.appendChild(indicator);
+        }
+    }
+    
+    if (!indicator) return;
+    console.log('indicators', indicator)
+    
+    // Update indicator content
+    if (isConsistent) {
+        indicator.innerHTML = `✓ <span class="text-green-600">Consistent (CR: ${cr.toFixed(5)})</span>`;
+    } else {
+        indicator.innerHTML = `⚠ <span class="text-yellow-600">Inconsistent (CR: ${cr.toFixed(5)})</span>`;
+    }
+}
+
+// Add event listeners to radio buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Add change event to all comparison radio buttons
+    document.querySelectorAll('input[type="radio"][name^="comparison_"]').forEach(radio => {
+        radio.addEventListener('change', async function() {
+            console.log('changed:', this.name)
+            // Check if this is a criteria comparison or alternative comparison
+            const isCriteriaComparison = this.name.match(/^comparison_\d+_\d+$/);
+            
+            if (isCriteriaComparison) {
+                console.log('criteria comparison', isCriteriaComparison)
+                // For criteria comparison
+                const result = await checkConsistency('criteria', true);
+                updateConsistencyIndicator('criteria', result.is_consistent, result.consistency_ratio, true);
+            } else {
+                console.log('alternative comparison', isCriteriaComparison)
+                // For alternative comparison
+                const match = this.name.match(/^comparison_(.+?)_/);
+                if (match && match[1]) {
+                    const criterion = match[1];
+                    const result = await checkConsistency(criterion, false);
+                    updateConsistencyIndicator(criterion, result.is_consistent, result.consistency_ratio, false);
+                }
+            }
+        });
+    });
+    
+    // Initial check for existing values
+    // For criteria comparison
+    const criteriaRadios = document.querySelector('input[type="radio"][name^="comparison_0_"]');
+    if (criteriaRadios) {
+        checkConsistency('criteria', true).then(result => {
+            updateConsistencyIndicator('criteria', result.is_consistent, result.consistency_ratio, true);
+        });
+    }
+    
+    // For alternative comparisons
+    document.querySelectorAll('div[class*="bg-gray-50"]').forEach(div => {
+        const criterionHeader = div.querySelector('h3');
+        if (criterionHeader && !div.contains(criteriaRadios)) {
+            const criterion = criterionHeader.textContent.trim();
+            checkConsistency(criterion, false).then(result => {
+                updateConsistencyIndicator(criterion, result.is_consistent, result.consistency_ratio, false);
+            });
+        }
+    });
+});
+
+    function addCriterion() {
+        const template = `
+            <div class="flex items-center space-x-4">
+                <input type="text" name="criteria[]" required placeholder="Enter criterion name"
+                    class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <select name="criteria_type[]" required
+                    class="shadow border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                    <option value="benefit">Benefit</option>
+                    <option value="cost">Cost</option>
+                </select>
+                <button type="button" onclick="removeCriterion(this)"
+                    class="text-red-500 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.getElementById('criteriaList').insertAdjacentHTML('beforeend', template);
+    }
+
+    function removeCriterion(button) {
+        button.closest('.flex').remove();
+    }
+
+    function addAlternative() {
+        const template = `
+            <div class="flex items-center space-x-4">
+                <input type="text" name="alternatives[]" required placeholder="Enter alternative name"
+                    class="flex-1 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+                <button type="button" onclick="removeAlternative(this)"
+                    class="text-red-500 hover:text-red-700">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                </button>
+            </div>
+        `;
+        document.getElementById('alternativesList').insertAdjacentHTML('beforeend', template);
+    }
+
+    function removeAlternative(button) {
+        button.closest('.flex').remove();
+    }
+</script>
+{% endblock %}
+{% endblock %}
