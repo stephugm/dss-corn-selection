@@ -192,11 +192,11 @@ def calculate_results(project_id):
     data = get_project_data(project_id)
     if not data:
         return None
-    
+
     method = data['project']['method']
     alternatives = data['alternatives']
     criteria = data['criteria']
-    
+
     # Calculate results based on method
     if method == 'ahp':
         # Use the AHP module to calculate results
@@ -241,24 +241,26 @@ def calculate_results(project_id):
     results = []
     for alt, score in zip(alternatives, final_scores):
         results.append({
+            'project_id': project_id,
             'alternative': alt,
-            'final_score': float(score)
+            'final_score': float(score),
+            'rank': None
         })
     
-    # Sort by score (descending) and assign ranks
     results.sort(key=lambda x: x['final_score'], reverse=True)
     for i, result in enumerate(results, 1):
         result['rank'] = i
-    
-    # Read existing results
+
+    # Remove old results for the project
     existing_results = []
-    with open(RESULTS_FILE, 'r', newline='') as f:
-        reader = csv.DictReader(f)
-        for row in reader:
-            if row['project_id'] != project_id:
-                existing_results.append(row)
-    
-    # Add new results
+    if os.path.exists(RESULTS_FILE):
+        with open(RESULTS_FILE, 'r', newline='') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                if row['project_id'] != project_id:
+                    existing_results.append(row)
+
+    # Add new results to the list
     for result in results:
         existing_results.append({
             'project_id': project_id,
@@ -266,7 +268,7 @@ def calculate_results(project_id):
             'final_score': result['final_score'],
             'rank': result['rank']
         })
-    
+
     # Write back all results
     with open(RESULTS_FILE, 'w', newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['project_id', 'alternative', 'final_score', 'rank'])
@@ -344,9 +346,9 @@ def results(project_id):
         return redirect(url_for('dashboard'))
     
     # If no results exist yet, calculate them
-    if not data.get('results'):
-        calculate_results(project_id)
-        data = get_project_data(project_id)  # Refresh data
+    # if not data.get('results'):
+    calculate_results(project_id)
+    data = get_project_data(project_id)  # Refresh data
     
     return render_template('results.html',
                           project=data.get('project'),
