@@ -127,22 +127,12 @@
                 <div class="flex items-center space-x-4">
                     <label class="w-1/3">{{ criterion }}</label>
                     <div class="flex-1">
-                        <input type="number" name="target_values[]" required min="1" max="5" step="1" value="{{ session.target_profile[criterion] if session.target_profile else '' }}"
+                        <input type="number" name="target_values[]" step="0.01" required value="{{ session.target_profile[criterion] if session.target_profile else '' }}"
                             class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
                     </div>
-                    <div class="w-24 text-sm text-gray-500">Scale: 1-5</div>
                 </div>
                 {% endfor %}
             </div>
-            <div class="mt-6 p-4 bg-gray-50 rounded">
-                <h3 class="font-bold mb-2">Scale Reference:</h3>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>1 = Very Poor</li>
-                    <li>2 = Poor</li>
-                    <li>3 = Average</li>
-                    <li>4 = Good</li>
-                    <li>5 = Excellent</li>
-                </ul>
             </div>
             <div class="flex justify-between mt-6">
                 <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='profile_matching') }}"
@@ -214,7 +204,6 @@
     <!-- Alternative Scores Step -->
     <div class="bg-white rounded-lg shadow p-6">
         <h2 class="text-2xl font-bold mb-4">Alternative Scores</h2>
-        <p class="mb-4 text-gray-600">Rate each alternative against the criteria using the same 1-5 scale.</p>
         <form method="POST" action="{{ url_for('wizard.save_alternative_scores_profile') }}">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -249,16 +238,6 @@
                         </tr>
                         {% endfor %}
                 </table>
-            </div>
-            <div class="mt-6 p-4 bg-gray-50 rounded">
-                <h3 class="font-bold mb-2">Scale Reference:</h3>
-                <ul class="list-disc list-inside space-y-1">
-                    <li>1 = Very Poor</li>
-                    <li>2 = Poor</li>
-                    <li>3 = Average</li>
-                    <li>4 = Good</li>
-                    <li>5 = Excellent</li>
-                </ul>
             </div>
             <div class="flex justify-between mt-6">
                 <a href="{{ url_for('wizard.project_wizard', step=current_step-1, method='profile_matching') }}"
