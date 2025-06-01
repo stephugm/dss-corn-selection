@@ -74,9 +74,12 @@ def save_weights_topsis():
         writer = csv.DictWriter(f, fieldnames=['project_id', 'criterion', 'weight'])
         writer.writeheader()
         writer.writerows(existing_weights)
-    
+        
+    session_weights = {}
+    for criterion, weight in zip(criteria, weights):
+        session_weights[criterion] = weight
     # Store in session
-    session['weights'] = weights
+    session['weights'] = session_weights
     
     return redirect(url_for('wizard.project_wizard', step=4, method='topsis'))
 

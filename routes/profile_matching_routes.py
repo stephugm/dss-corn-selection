@@ -73,7 +73,10 @@ def save_target_profile():
         writer.writerows(existing_profiles)
     
     # Store in session
-    session['target_profile'] = target_values
+    session_target_profile = {}
+    for criterion, value in zip(criteria, target_values):
+        session_target_profile[criterion] = value
+    session['target_profile'] = session_target_profile
     
     return redirect(url_for('wizard.project_wizard', step=4, method='profile_matching'))
 

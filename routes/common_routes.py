@@ -62,6 +62,8 @@ def project_wizard(step):
     pairwise_comparisons = {}
     alternative_comparisons = {}
     project_id = session.get('project_id')
+    if not project_id:
+        return redirect(url_for('dashboard'))
     
     if project_id:
         if step == 3 and method == 'ahp':

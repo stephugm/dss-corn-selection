@@ -172,10 +172,41 @@ function filterProjects() {
     }
 }
 
+// Search projects by title
+function searchProjects() {
+    const searchInput = document.querySelector('input[placeholder="Search projects..."]');
+    const query = searchInput.value.toLowerCase();
+    const projectCards = document.querySelectorAll('.project-card');
+
+    projectCards.forEach(card => {
+        const title = card.querySelector('h3').textContent.toLowerCase();
+        card.style.display = title.includes(query) ? 'block' : 'none';
+    });
+
+    // Show message if no projects match the search
+    const visibleProjects = document.querySelectorAll('.project-card[style="display: block;"]');
+    const noProjectsMessage = document.querySelector('.no-projects-message');
+
+    if (visibleProjects.length === 0) {
+        if (!noProjectsMessage) {
+            const projectsGrid = document.querySelector('.grid');
+            const message = document.createElement('div');
+            message.className = 'col-span-full text-center py-12 no-projects-message';
+            message.textContent = 'No projects match the search query.';
+            projectsGrid.appendChild(message);
+        } else {
+            noProjectsMessage.style.display = 'block';
+        }
+    } else if (noProjectsMessage) {
+        noProjectsMessage.style.display = 'none';
+    }
+}
+
 // Add event listeners when the DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
     const methodFilter = document.getElementById('methodFilter');
     const dateFilter = document.getElementById('dateFilter');
+    const searchInput = document.querySelector('input[placeholder="Search projects..."]');
     
     if (methodFilter) {
         methodFilter.addEventListener('change', filterProjects);
@@ -183,6 +214,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (dateFilter) {
         dateFilter.addEventListener('change', filterProjects);
+    }
+    
+    if (searchInput) {
+        searchInput.addEventListener('input', searchProjects);
     }
     
     // Initialize Lucide icons
