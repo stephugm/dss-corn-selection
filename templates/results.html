@@ -32,6 +32,16 @@
         </div>
     </div>
 
+    <div class="bg-white rounded-lg shadow-sm border p-6">
+        <h2 class="text-lg font-semibold text-gray-900 mb-4">Recommended Alternative</h2>
+        <p class="text-gray-700">
+            Based on the analysis, the recommended alternative is
+            <span class="font-semibold text-green-700">{{ results[0]['alternative'] }}</span>
+            with a final score of
+            <span class="font-semibold text-green-700">{{ "%.4f"|format(results[0]['final_score']) }}</span>.
+        </p>
+    </div>
+
     <!-- Results Grid -->
     <div class="grid grid-cols-1 {% if project.method != 'profile_matching' %}lg:grid-cols-2{% endif %} gap-6">
         <!-- Rankings Chart -->

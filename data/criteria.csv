@@ -14,3 +14,8 @@ project_id,name,type
 20250515220927,Hasil Panen,benefit
 20250515220927,Usia Panen,benefit
 20250515220927,Umur bibit,benefit
+20250602121908,Curah Hujan,core
+20250602121908,Tahan Hama,secondary
+20250602121908,Hasil Panen,secondary
+20250602121908,Usia Panen,secondary
+20250602121908,Umur Bibit,core

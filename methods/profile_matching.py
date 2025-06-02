@@ -175,3 +175,47 @@ def calculate_scores(alternatives_matrix, target_profile, core_indices,
         print(f"Core Score: {core_score:.2f}, Secondary Score: {secondary_score:.2f}, Final Score: {scores[i]:.2f}\n")
     
     return scores
+
+def calculate_scores_with_ranking(alternatives_matrix, target_profile, core_indices, secondary_indices, core_weight=0.6, secondary_weight=0.4):
+    """Calculate final scores and rank alternatives using Profile Matching method.
+    
+    Args:
+        alternatives_matrix (np.array): Matrix of alternative scores for each criterion
+        target_profile (np.array): Target/ideal profile values
+        core_indices (list): Indices of core criteria
+        secondary_indices (list): Indices of secondary criteria
+        core_weight (float): Weight for core factors (default: 0.6)
+        secondary_weight (float): Weight for secondary factors (default: 0.4)
+        
+    Returns:
+        list: Sorted list of results with rank, alternative index, and final score
+    """
+    n_alternatives = len(alternatives_matrix)
+    scores = np.zeros(n_alternatives)
+
+    # STEP 1: Compute global min and max for each criterion across all data
+    global_mins, global_maxs = compute_global_min_max_per_criterion(alternatives_matrix, target_profile)
+
+    for i in range(n_alternatives):
+        # STEP 2: Calculate gaps using the global min/max for scaling
+        gaps = calculate_gap(target_profile, alternatives_matrix[i], global_mins, global_maxs)
+        
+        # STEP 3: Map gaps to weights
+        weights = np.array([map_gap_to_weight(gap) for gap in gaps])
+        
+        # STEP 4: Calculate core and secondary factor scores
+        core_score = calculate_core_factor_score(weights, core_indices)
+        secondary_score = calculate_secondary_factor_score(weights, secondary_indices)
+        
+        # STEP 5: Calculate final score
+        scores[i] = (core_weight * core_score) + (secondary_weight * secondary_score)
+
+    # Combine alternatives with their scores and sort by score descending
+    results = [
+        {"rank": i + 1, "alternative_index": alt_idx, "final_score": score}
+        for i, (alt_idx, score) in enumerate(
+            sorted(enumerate(scores), key=lambda x: x[1], reverse=True)
+        )
+    ]
+
+    return results
