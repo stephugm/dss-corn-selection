@@ -346,18 +346,25 @@ def results(project_id):
         return redirect(url_for('dashboard'))
     
     # If no results exist yet, calculate them
-    # if not data.get('results'):
     calculate_results(project_id)
     data = get_project_data(project_id)  # Refresh data
     
-    return render_template('results.html',
-                          project=data.get('project'),
-                          criteria=data.get('criteria', []),
-                          criterion_types=data.get('criterion_types', {}),
-                          weights=data.get('weights', {}),
-                          alternatives=data.get('alternatives', []),
-                          scores=data.get('scores', {}),
-                          results=data.get('results', []))
+    # Prepare the template context
+    context = {
+        'project': data.get('project'),
+        'criteria': data.get('criteria', []),
+        'criterion_types': data.get('criterion_types', {}),
+        'weights': data.get('weights', {}),
+        'alternatives': data.get('alternatives', []),
+        'scores': data.get('scores', {}),
+        'results': data.get('results', [])
+    }
+    
+    # Add target_profile to context if it exists
+    if 'target_profile' in data:
+        context['target_profile'] = data['target_profile']
+    
+    return render_template('results.html', **context)
 
 @app.route('/export/<project_id>')
 def export_results(project_id):
